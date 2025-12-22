@@ -129,13 +129,69 @@ frontend/
   Defines the Docker image for the frontend service.
 
 ---
+## 2. Development Setup Guide
 
-## 4. Environment Configuration
+This section explains how to set up and run the application in a development environment.
 
-Both backend and frontend applications use environment variables for configuration. These variables are defined in `.env` files or directly in the Docker Compose configuration. Only development and test values are used, ensuring security and reproducibility during evaluation.
+### 2.1 Prerequisites
+
+- Node.js v18 or higher
+- Docker and Docker Compose
+- Git
+- A modern web browser (Chrome, Firefox)
 
 ---
 
-## 5. Conclusion
+### 2.2 Environment Variables
 
-This technical specification defines a clear and scalable project structure that supports modular development, secure multi-tenancy, and containerized deployment. The separation of concerns between backend and frontend ensures maintainability and aligns with best practices for production-ready SaaS applications.
+Environment variables are required for configuring the backend and frontend services. All variables are provided using `.env` files or directly through Docker Compose.
+
+**Backend (.env example):**
+- DATABASE_URL
+- JWT_SECRET
+- PORT
+
+**Frontend (.env example):**
+- REACT_APP_API_URL
+
+Only development or test values are used to ensure evaluation safety.
+
+---
+
+### 2.3 Installation Steps
+
+1. Clone the GitHub repository:
+   ```bash
+   git clone https://github.com/pavanisri-hub/multi-tenant-saas-platform.git
+
+2.4 How to Run the Application Locally
+
+The entire application can be started using Docker Compose with a single command:
+
+docker-compose up -d
+
+
+This command starts:
+
+PostgreSQL database
+
+Backend API server
+
+Frontend application
+
+Database migrations and seed data are executed automatically during startup.
+
+2.5 How to Run Tests
+
+Backend tests can be executed using:
+
+npm test
+
+
+Tests validate API functionality, authentication, and authorization logic.
+
+3. Conclusion
+
+This technical specification provides a clear project structure and development setup guide that ensures consistency, scalability, and ease of deployment. The defined structure supports secure multi-tenancy and aligns with best practices for production-ready SaaS applications.
+
+
