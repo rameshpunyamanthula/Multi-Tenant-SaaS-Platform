@@ -92,17 +92,35 @@ Overall, this technology stack provides a robust, scalable, and secure foundatio
 
 ## 3. Security Considerations
 
+Security is a critical aspect of any multi-tenant SaaS application, as multiple organizations share the same infrastructure while expecting strict data isolation and protection. A well-designed security strategy must address authentication, authorization, data isolation, and API-level protection to prevent unauthorized access and data breaches.
+
 ### Key Security Measures in Multi-Tenant Systems
-(Write here)
+
+The following security measures are essential for securing a multi-tenant application:
+
+1. **Tenant-Based Data Isolation**: Every tenant-specific record is associated with a `tenant_id`, and all database queries are strictly scoped using this identifier to prevent cross-tenant data access.
+2. **Role-Based Access Control (RBAC)**: Different user roles such as super admin, tenant admin, and regular user are enforced at the API level to restrict access to sensitive operations.
+3. **Secure Authentication Mechanism**: JWT-based authentication is used to securely identify users and validate requests without maintaining server-side sessions.
+4. **Password Hashing and Storage**: User passwords are never stored in plain text and are securely hashed using industry-standard algorithms.
+5. **Audit Logging**: Important actions such as logins, tenant creation, and resource modifications are logged to maintain traceability and detect suspicious activity.
 
 ### Data Isolation Strategy
-(Write here)
 
-### Authentication & Authorization
-(Write here)
+Data isolation is enforced primarily at the application and database layers. Each tenant’s data is stored in shared tables but is differentiated using a `tenant_id` column. Every API request is validated to ensure that the authenticated user’s tenant context matches the tenant associated with the requested resource. This approach prevents tenants from accessing data belonging to other organizations, even if API parameters are manipulated.
+
+Frontend-level checks are not considered sufficient for isolation. All enforcement is done at the backend API level using middleware that injects tenant context into database queries. This ensures consistent and secure data access across the entire application.
+
+### Authentication & Authorization Approach
+
+The application uses **JWT-based authentication** for stateless and scalable user authentication. Upon successful login, the server issues a JSON Web Token containing the user’s identity, role, and tenant context. This token must be included in the Authorization header of every protected API request.
+
+Authorization is implemented using **Role-Based Access Control (RBAC)**. Each API endpoint checks the user’s role before performing any operation. For example, only super admins can manage tenants, tenant admins can manage users and projects within their organization, and regular users have limited permissions. This ensures that even authenticated users cannot perform actions beyond their assigned role.
 
 ### Password Hashing Strategy
-(Write here)
+
+Password security is handled using **bcrypt**, a widely accepted password hashing algorithm. Bcrypt automatically salts passwords before hashing, which protects against rainbow table attacks and brute-force attempts. Only hashed passwords are stored in the database, and password comparison is performed using bcrypt’s secure comparison methods. This approach ensures that even if the database is compromised, raw passwords cannot be retrieved.
 
 ### API Security Measures
-(Write here)
+
+Several measures are implemented to secure the API layer. All inputs are validated to prevent SQL injection and malformed requests. Proper HTTP status codes are used to communicate errors without exposing sensitive internal details. Error messages are designed to be user-friendly while avoiding leakage of system information. Additionally, critical operations are wrapped in database transactions to maintain consistency and prevent partial updates. Together, these measures provide a robust and secure foundation for the multi-tenant SaaS platform.
+
