@@ -1,20 +1,17 @@
--- UP
-CREATE TABLE tenants (
-    id VARCHAR(36) PRIMARY KEY,
-    name VARCHAR(255) NOT NULL,
-    subdomain VARCHAR(255) NOT NULL UNIQUE,
+CREATE TABLE IF NOT EXISTS tenants (
+  id UUID PRIMARY KEY,
+  name VARCHAR(255) NOT NULL,
+  subdomain VARCHAR(255) UNIQUE NOT NULL,
 
-    status VARCHAR(20) NOT NULL DEFAULT 'trial'
-        CHECK (status IN ('active', 'suspended', 'trial')),
+  status VARCHAR(20)
+    CHECK (status IN ('active', 'suspended', 'trial')),
 
-    subscription_plan VARCHAR(20) NOT NULL DEFAULT 'free'
-        CHECK (subscription_plan IN ('free', 'pro', 'enterprise')),
+  subscription_plan VARCHAR(20)
+    CHECK (subscription_plan IN ('free', 'pro', 'enterprise')),
 
-    max_users INTEGER NOT NULL DEFAULT 5,
-    max_projects INTEGER NOT NULL DEFAULT 3,
+  max_users INTEGER,
+  max_projects INTEGER,
 
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
-
-DROP TABLE IF EXISTS tenants;

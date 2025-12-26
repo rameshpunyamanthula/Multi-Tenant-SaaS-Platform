@@ -1,6 +1,7 @@
 -- =====================================================
--- SEED DATA FOR MULTI-TENANT SAAS PLATFORM
+-- SEED DATA FOR MULTI-TENANT SAAS PLATFORM (IDEMPOTENT)
 -- =====================================================
+
 
 -- ===============================
 -- 1. SUPER ADMIN (NO TENANT)
@@ -17,11 +18,13 @@ INSERT INTO users (
     '11111111-1111-1111-1111-111111111111',
     NULL,
     'superadmin@system.com',
-    '$2b$10$CwTycUXWue0Thq9StjUM0uJ8yH4c3pZ1u5lHppZArYdS4x0dYJ8eW',
+    '$2b$10$EixZaYVK1fsbw1ZfbX3OXePaWxn96p36WQoeG6Lruj3vjPGga31lW',
     'System Super Admin',
     'super_admin',
     TRUE
-);
+)
+ON CONFLICT (id) DO NOTHING;
+
 
 -- ===============================
 -- 2. SAMPLE TENANT (DEMO COMPANY)
@@ -29,7 +32,7 @@ INSERT INTO users (
 INSERT INTO tenants (
     id,
     name,
-    subdomain,
+    subdomain,  
     status,
     subscription_plan,
     max_users,
@@ -42,7 +45,9 @@ INSERT INTO tenants (
     'pro',
     25,
     15
-);
+)
+ON CONFLICT (id) DO NOTHING;
+
 
 -- ===============================
 -- 3. TENANT ADMIN (DEMO COMPANY)
@@ -59,11 +64,13 @@ INSERT INTO users (
     '33333333-3333-3333-3333-333333333333',
     '22222222-2222-2222-2222-222222222222',
     'admin@demo.com',
-    '$2b$10$CwTycUXWue0Thq9StjUM0uJ8yH4c3pZ1u5lHppZArYdS4x0dYJ8eW',
+    '$2b$10$EixZaYVK1fsbw1ZfbX3OXePaWxn96p36WQoeG6Lruj3vjPGga31lW',
     'Demo Tenant Admin',
     'tenant_admin',
     TRUE
-);
+)
+ON CONFLICT (id) DO NOTHING;
+
 
 -- ===============================
 -- 4. REGULAR USERS (DEMO COMPANY)
@@ -81,7 +88,7 @@ INSERT INTO users (
     '44444444-4444-4444-4444-444444444444',
     '22222222-2222-2222-2222-222222222222',
     'user1@demo.com',
-    '$2b$10$CwTycUXWue0Thq9StjUM0uJ8yH4c3pZ1u5lHppZArYdS4x0dYJ8eW',
+    '$2b$10$EixZaYVK1fsbw1ZfbX3OXePaWxn96p36WQoeG6Lruj3vjPGga31lW',
     'Demo User One',
     'user',
     TRUE
@@ -90,14 +97,16 @@ INSERT INTO users (
     '55555555-5555-5555-5555-555555555555',
     '22222222-2222-2222-2222-222222222222',
     'user2@demo.com',
-    '$2b$10$CwTycUXWue0Thq9StjUM0uJ8yH4c3pZ1u5lHppZArYdS4x0dYJ8eW',
+    '$2b$10$EixZaYVK1fsbw1ZfbX3OXePaWxn96p36WQoeG6Lruj3vjPGga31lW',
     'Demo User Two',
     'user',
     TRUE
-);
+)
+ON CONFLICT (id) DO NOTHING;
+
 
 -- ===============================
--- 5. SAMPLE PROJECTS (2)
+-- 5. SAMPLE PROJECTS
 -- ===============================
 INSERT INTO projects (
     id,
@@ -122,10 +131,12 @@ INSERT INTO projects (
     'Develop a new mobile application',
     'active',
     '33333333-3333-3333-3333-333333333333'
-);
+)
+ON CONFLICT (id) DO NOTHING;
+
 
 -- ===============================
--- 6. SAMPLE TASKS (5)
+-- 6. SAMPLE TASKS
 -- ===============================
 INSERT INTO tasks (
     id,
@@ -186,4 +197,5 @@ INSERT INTO tasks (
     'todo',
     'low',
     '55555555-5555-5555-5555-555555555555'
-);
+)
+ON CONFLICT (id) DO NOTHING;

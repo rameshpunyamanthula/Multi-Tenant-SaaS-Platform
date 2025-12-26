@@ -1,0 +1,52 @@
+version: "3.9"
+
+services:
+  database:
+    image: postgres:16
+    container_name: database
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: partnr_user
+      POSTGRES_PASSWORD: partnr_pass
+      POSTGRES_DB: partnr_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - db_data:/var/lib/postgresql/data
+
+  backend:
+    build: ./backend
+    container_name: backend
+    restart: unless-stopped
+    depends_on:
+      - database
+    environment:
+      NODE_ENV: development
+      PORT: 5000
+      DB_HOST: database
+      DB_PORT: 5432
+      DB_USER: partnr_user
+      DB_PASSWORD: partnr_pass
+      DB_NAME: partnr_db
+      JWT_SECRET: "super-secret-dev-key"
+      JWT_EXPIRES_IN: "24h"
+      CORS_ORIGIN: "http://localhost:3000"
+    ports:
+      - "5000:5000"
+
+  # frontend:
+  #   image: node:20
+  #   container_name: frontend
+  #   working_dir: /app
+  #   command: sh -c "npm install && npm start"
+  #   volumes:
+  #     - ./frontend:/app
+  #   depends_on:
+  #     - backend
+  #   environment:
+  #     REACT_APP_API_BASE_URL: "http://backend:5000"
+  #   ports:
+  #     - "3000:3000"
+
+volumes:
+  db_data:
