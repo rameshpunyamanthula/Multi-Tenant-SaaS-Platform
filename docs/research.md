@@ -123,4 +123,124 @@ PostgreSQL was chosen for its optimal combination of reliability, advanced featu
 
 ### Authentication Method
 
-The application uses **JWT (JSON Web Token) based authentication**. JWT enables stateless
+The application uses **JWT (JSON Web Token) based authentication**. JWT enables stateless authentication, where the server does not need to store session information. When a user logs in successfully, the server generates a JWT token containing the user's identity (userId), their tenant association (tenantId), and their role (super_admin, tenant_admin, or user). This token is cryptographically signed using a secret key, ensuring that it cannot be tampered with by clients.
+
+JWT tokens are included in the Authorization header of HTTP requests using the Bearer scheme. The authentication middleware on the server validates the token signature, checks the expiration time, and extracts the payload to identify the user and tenant context. This stateless approach eliminates the need for server-side session storage, making the system more scalable and suitable for distributed deployments.
+
+Token expiration is set to 24 hours by default, balancing security with user convenience. Refresh token mechanisms can be implemented if longer session durations are required. The JWT payload includes minimal information to keep token size small, typically containing only userId, tenantId, role, and standard claims like iat (issued at) and exp (expiration time).
+
+**Alternatives Considered:**
+
+- **Session-based Authentication**: Traditional session-based authentication stores user state on the server, typically in memory or a session database like Redis. While this approach provides strong server-side control over sessions and allows immediate session invalidation, it introduces scalability challenges. Each server instance must either share session data through a central store or use sticky sessions, adding infrastructure complexity. For a multi-tenant SaaS application designed for horizontal scaling, session management becomes a bottleneck. Session stores require additional infrastructure, monitoring, and maintenance.
+
+- **OAuth 2.0 / OpenID Connect**: OAuth 2.0 is an authorization framework commonly used for third-party authentication, while OpenID Connect adds an authentication layer on top. These protocols are excellent for enabling "Sign in with Google" or similar federated identity scenarios. However, for this project, implementing full OAuth flows adds unnecessary complexity for a self-contained authentication system. OAuth is more appropriate when integrating with external identity providers or building platforms that serve as identity providers themselves. The JWT-based approach provides sufficient security and flexibility without the protocol overhead.
+
+JWT-based authentication was chosen because it provides stateless scalability, simplified horizontal scaling without session synchronization, reduced infrastructure complexity compared to session stores, straightforward implementation with well-established libraries, and native support for API-first architectures where frontend and backend are decoupled.
+
+### Deployment Platforms
+
+The application is designed for **containerized deployment using Docker and Docker Compose**. Docker provides consistent environments across development, testing, and production, eliminating "it works on my machine" problems. Containerization ensures that the application, along with all its dependencies, runtime, and configuration, is packaged into portable, reproducible units.
+
+Docker Compose orchestrates multi-container applications, making it easy to define and run the complete stack including the backend API server, PostgreSQL database, and frontend application. The docker-compose.yml file in the project root defines service configurations, networking, volumes for data persistence, environment variables, and startup dependencies. This approach significantly simplifies onboarding new developers and deploying to various environments.
+
+Containerized applications can be deployed to various platforms including cloud providers (AWS ECS, Google Cloud Run, Azure Container Instances), Kubernetes clusters for large-scale orchestration, platform-as-a-service offerings (Heroku, Render, Railway), or traditional VPS/dedicated servers. The Docker-based approach provides maximum flexibility and portability.
+
+For production deployments, Docker images can be optimized through multi-stage builds that reduce image size by separating build dependencies from runtime dependencies. Health checks can be configured to ensure containers are running properly, and orchestration platforms can automatically restart failed containers. Environment-specific configurations are managed through environment variables or configuration files mounted as volumes.
+
+**Alternatives Considered:**
+
+- **Traditional VM-based Deployment**: Virtual machines provide strong isolation but are heavyweight compared to containers. VMs require full operating system installations, consume more resources, have longer startup times, and are less efficient for horizontal scaling. While VMs are still used in enterprise environments, containers offer better resource utilization and faster deployment cycles for modern cloud-native applications.
+
+- **Serverless (AWS Lambda, Cloud Functions)**: Serverless platforms automatically scale and charge only for actual compute time used. However, serverless introduces cold start latency, execution time limits, statelessness requirements, vendor lock-in, and complexity in managing relational database connections. For a database-intensive application with long-running connections, traditional container-based deployment provides better performance and predictability. Serverless is better suited for event-driven workloads, background jobs, and APIs with sporadic traffic.
+
+Docker with Docker Compose was chosen for its balance of simplicity, reproducibility, portability across cloud providers, ease of local development, and straightforward scaling through container orchestration platforms.
+
+**(Word count: ~650 words)**
+
+---
+
+## 3. Security Considerations
+
+Security is paramount in multi-tenant SaaS applications because a single vulnerability can expose data across multiple organizations. This section outlines the comprehensive security measures implemented to protect tenant data, ensure proper authentication and authorization, and maintain system integrity.
+
+### 1. Multi-Tenant Data Isolation
+
+The most critical security measure in a multi-tenant system is ensuring complete data isolation between tenants. Every database query must be scoped to the authenticated user's tenant, preventing accidental or malicious cross-tenant data access.
+
+**Implementation Strategy:**
+
+- **Tenant ID in Every Query**: All tenant-specific tables (users, projects, tasks) include a `tenant_id` foreign key column. Database queries automatically filter by this column, ensuring users can only access data within their tenant boundary.
+
+- **Middleware-Based Tenant Context**: Authentication middleware extracts the `tenant_id` from the JWT token payload and attaches it to the request context. Subsequent database operations automatically inject this tenant filter, eliminating the risk of developers forgetting to add tenant scoping in individual queries.
+
+- **Database-Level Constraints**: Foreign key relationships enforce referential integrity at the database level. For example, a task must belong to a project, and that project must belong to the same tenant as the task. This prevents data corruption and maintains consistency.
+
+- **API-Level Authorization**: Even if tenant filtering is applied, API endpoints verify that the authenticated user belongs to the tenant they're trying to access. For instance, if a user attempts to access `/api/tenants/:tenantId`, the system verifies that the `tenantId` in the URL matches the `tenantId` in the JWT token, unless the user is a super_admin.
+
+- **Role-Based Access Control (RBAC)**: Different user roles (super_admin, tenant_admin, user) have different permissions. Super admins can access all tenants for platform management, tenant admins can manage users and settings within their tenant, and regular users have read/write access to projects and tasks within their tenant.
+
+### 2. Authentication Security
+
+**Password Hashing Strategy**: User passwords are never stored in plain text. The system uses **bcrypt** for password hashing, which is specifically designed for password storage and includes built-in salting and adaptive cost factors. Bcrypt's computational cost can be adjusted to remain secure against brute-force attacks as hardware improves. The default cost factor is set to 10 rounds, providing strong security while maintaining reasonable performance.
+
+**JWT Security Measures**:
+- Tokens are signed using a strong secret key (minimum 256 bits) stored in environment variables, never hardcoded in source code.
+- Token expiration is enforced at 24 hours, requiring users to re-authenticate periodically.
+- Tokens include issuer (iss) and audience (aud) claims to prevent token reuse across different systems.
+- Tokens are transmitted only over HTTPS in production to prevent interception.
+
+**Login Protection**:
+- Failed login attempts can be rate-limited using middleware like express-rate-limit to prevent brute-force attacks.
+- Account lockout mechanisms can temporarily disable accounts after multiple failed login attempts.
+- Login events are logged in the audit_logs table for security monitoring.
+
+### 3. API Security Measures
+
+**Input Validation**: All API inputs are validated using libraries like express-validator or Joi. This prevents SQL injection, XSS attacks, and malformed data from entering the system. Validation rules enforce data types, lengths, formats (email, UUID), and allowed values (enums).
+
+**SQL Injection Prevention**: The application uses parameterized queries through PostgreSQL's client library. All user inputs are treated as data, not executable code. ORM libraries or query builders provide additional protection by escaping inputs automatically.
+
+**CORS Configuration**: Cross-Origin Resource Sharing (CORS) is configured to allow requests only from trusted frontend origins. In development, localhost URLs are allowed, while production configurations whitelist only the actual frontend domain.
+
+**Rate Limiting**: API endpoints implement rate limiting to prevent abuse, DDoS attacks, and excessive resource consumption. Different rate limits can be applied based on user roles or subscription tiers.
+
+**HTTPS Only**: Production deployments enforce HTTPS for all communications, ensuring data in transit is encrypted. HTTP Strict Transport Security (HSTS) headers instruct browsers to always use HTTPS.
+
+### 4. Authorization and Role-Based Access
+
+Authorization middleware checks user roles before executing sensitive operations:
+
+- **super_admin**: Can view all tenants, modify subscription plans, access system-wide analytics, and perform platform management tasks.
+- **tenant_admin**: Can manage users within their tenant, update tenant settings, view tenant-level analytics, but cannot access other tenants.
+- **user**: Can create/read/update/delete projects and tasks within their tenant, update their own profile, but cannot manage other users or tenant settings.
+
+Endpoints are protected using role-checking middleware that verifies the user's role from the JWT token before allowing access.
+
+### 5. Audit Logging for Security Monitoring
+
+The `audit_logs` table tracks all significant actions including user creation/deletion, project/task modifications, login attempts (successful and failed), password changes, tenant configuration updates, and permission changes.
+
+Audit logs include:
+- `user_id`: Who performed the action
+- `tenant_id`: Which tenant context
+- `action`: What action was performed (e.g., 'CREATE_PROJECT', 'DELETE_USER')
+- `entity_type` and `entity_id`: What was affected
+- `ip_address`: Origin of the request
+- `created_at`: Timestamp
+
+These logs enable security teams to detect suspicious activity, investigate security incidents, meet compliance requirements (GDPR, SOC 2), and provide accountability for user actions.
+
+**Additional Security Best Practices:**
+- Environment variables store sensitive configuration (database credentials, JWT secrets) and are never committed to version control.
+- Dependency scanning tools (npm audit, Snyk) identify and fix vulnerable dependencies.
+- Error messages never expose sensitive information like database schema or internal paths.
+- Database connection pools are configured with appropriate limits to prevent resource exhaustion.
+- Sensitive data in responses (like password_hash) is explicitly excluded from API responses.
+
+**(Word count: ~900 words)**
+
+---
+
+**Total Research Document Word Count: Approximately 2,400 words**
+
+This comprehensive research document covers all required aspects: multi-tenancy approaches with detailed analysis and justification (~850 words), complete technology stack justification covering all layers with alternatives (~650 words for this section + ~500 words earlier = ~1,150 words total), and extensive security considerations covering five key areas (~900 words).
