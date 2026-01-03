@@ -9,28 +9,23 @@ const app = express();
 // core middleware
 app.use(express.json());
 
-// CORS - Allow both 3000 and 3001 for local dev
-const allowedOrigins = [
-  process.env.FRONTEND_URL || "http://localhost:3000",
-  "http://localhost:3001", // Your actual frontend port
-  "http://frontend:3000"   // For Docker
-];
-
+// ✅ SAFE CORS CONFIG (FIXED)
 app.use(
   cors({
-    origin: function (origin, callback) {
-      // Allow requests with no origin (like mobile apps or curl)
-      if (!origin) return callback(null, true);
-      
-      if (allowedOrigins.indexOf(origin) !== -1) {
-        callback(null, true);
-      } else {
-        callback(new Error('Not allowed by CORS'));
-      }
-    },
-    credentials: true
+    origin: [
+      "http://localhost:3000",
+      "http://localhost:3001",
+      "http://localhost:5173", // Vite / webpack-dev-server
+      process.env.FRONTEND_URL
+    ],
+    credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"]
   })
 );
+
+// ✅ IMPORTANT: handle preflight
+app.options("*", cors());
 
 // db
 const { pool } = require("./config/db");
@@ -66,16 +61,11 @@ app.use("/api/users", userRoutes);
 app.use("/api/projects", projectRoutes);
 app.use("/api/tasks", taskRoutes);
 
-app.get("/api/tenants-test-ping", (req, res) => {
-  res.json({ success: true, message: "Tenants test ping ok" });
-});
-
 // generic 404
 app.use((req, res) => {
   res.status(404).json({
     success: false,
-    message: "Route not found",
-    data: null
+    message: "Route not found"
   });
 });
 
