@@ -11,7 +11,6 @@ export function AuthProvider({ children }) {
     const token = localStorage.getItem("token");
     const user = localStorage.getItem("user");
     const tenantSubdomain = localStorage.getItem("tenantSubdomain");
-
     if (token && user) {
       setAuth({
         token,
