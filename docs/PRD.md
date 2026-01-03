@@ -56,7 +56,6 @@ The Tenant Admin is the administrator of a specific organization (tenant) and ma
 - Difficulty in understanding subscription usage and limits
 
 ---
-
 ### 2.3 End User
 
 **Role Description:**  
@@ -124,9 +123,7 @@ The End User is a regular team member who works on assigned projects and tasks w
 
 - **FR-022:** The system shall log all critical actions (login, user creation, project deletion) in an audit_logs table.
 - **FR-023:** The system shall provide a health check endpoint to report system status.
-
 ---
-
 ## 4. Non-Functional Requirements
 
 ### Performance Requirements
