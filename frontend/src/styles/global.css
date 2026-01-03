@@ -1,4 +1,3 @@
-/* Reset and Base Styles */
 * {
   margin: 0;
   padding: 0;
@@ -11,7 +10,6 @@ body {
   color: #1a202c;
 }
 
-/* Auth Pages (Login, Register) */
 .auth-container {
   min-height: 100vh;
   display: flex;
