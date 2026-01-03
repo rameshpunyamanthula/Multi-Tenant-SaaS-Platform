@@ -19,6 +19,7 @@ export default function ProtectedRoute({ children, allowedRoles = [] }) {
     );
   }
 
+  {}
   if (!auth) {
     return <Navigate to="/login" replace />;
   }

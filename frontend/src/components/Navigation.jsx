@@ -3,7 +3,6 @@ import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { authAPI } from "../services/api";
 
-
 export default function Navigation() {
   const { auth, logout } = useAuth();
   const navigate = useNavigate();
@@ -20,11 +19,8 @@ export default function Navigation() {
     logout();
     navigate("/login");
   };
-
-
+  
   const isActive = (path) => location.pathname === path;
-
-
   if (!auth) return null;
 
 
