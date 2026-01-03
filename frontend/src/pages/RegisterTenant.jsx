@@ -107,8 +107,7 @@ export default function RegisterTenant() {
                 value={formData.subdomain}
                 onChange={handleChange}
                 placeholder="acme"
-                required
-                pattern="[a-z0-9-]+"
+                pattern="^[a-z0-9]+(-[a-z0-9]+)*$"
                 className="form-input"
                 style={{ marginBottom: 0 }}
               />

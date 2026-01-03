@@ -26,8 +26,9 @@ export default function Dashboard() {
 
   const loadDashboardData = async () => {
     try {
-      const projectsRes = await projectsAPI.list({ limit: 5 });
-      const projects = projectsRes.data.data.projects || [];
+      const projectsRes = await projectsAPI.list();
+      const projects = projectsRes.data.data || [];
+
       setRecentProjects(projects);
 
       let totalTasks = 0;
@@ -40,7 +41,8 @@ export default function Dashboard() {
             projectId: project.id,
             assignedTo: auth.user.id 
           });
-          const tasks = tasksRes.data.data.tasks || [];
+          const tasks = tasksRes.data.data || [];
+
           allTasks.push(...tasks);
           
           totalTasks += tasks.length;
@@ -52,11 +54,12 @@ export default function Dashboard() {
 
       setMyTasks(allTasks.slice(0, 10));
       setStats({
-        totalProjects: projects.length,
-        totalTasks,
-        completedTasks,
-        pendingTasks: totalTasks - completedTasks,
-      });
+  totalProjects: projects.filter(p => p.status !== "archived").length,
+  totalTasks,
+  completedTasks,
+  pendingTasks: totalTasks - completedTasks,
+});
+
     } catch (err) {
       console.error("Error loading dashboard:", err);
     } finally {

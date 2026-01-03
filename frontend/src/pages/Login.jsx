@@ -22,7 +22,7 @@ export default function Login() {
   };
 
 
-  const handleSubmit = async (e) => {
+const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
     setLoading(true);
@@ -49,6 +49,7 @@ export default function Login() {
   };
 
 
+
   return (
     <div className="auth-container">
       <div className="auth-card">
@@ -60,14 +61,14 @@ export default function Login() {
           <div className="form-group">
             <label className="form-label">Tenant Subdomain</label>
             <input
-              type="text"
-              name="tenantSubdomain"
-              value={formData.tenantSubdomain}
-              onChange={handleChange}
-              placeholder="demo"
-              required
-              className="form-input"
-            />
+  type="text"
+  name="tenantSubdomain"
+  value={formData.tenantSubdomain}
+  onChange={handleChange}
+  placeholder="demo (leave empty for super admin)"
+  className="form-input"
+/>
+
           </div>
 
 
