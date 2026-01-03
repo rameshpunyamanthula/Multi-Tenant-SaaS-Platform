@@ -1,0 +1,62 @@
+{
+  "projectName": "Multi-Tenant SaaS Platform",
+  "studentName": "Your Name",
+  "repositoryUrl": "your-github-repo-url",
+  "deploymentUrls": {
+    "frontend": "http://localhost:3000",
+    "backend": "http://localhost:5000",
+    "notes": "Docker-based deployment. Use docker-compose up -d to start all services."
+  },
+  "testCredentials": {
+    "superAdmin": {
+      "email": "superadmin@system.com",
+      "password": "Admin@123",
+      "tenantSubdomain": "",
+      "notes": "Leave tenant subdomain empty for super admin login"
+    },
+    "tenantAdmin": {
+      "email": "admin@demo.com",
+      "password": "Admin@123",
+      "tenantSubdomain": "demo"
+    },
+    "regularUser1": {
+      "email": "user1@demo.com",
+      "password": "Admin@123",
+      "tenantSubdomain": "demo"
+    },
+    "regularUser2": {
+      "email": "user2@demo.com",
+      "password": "Admin@123",
+      "tenantSubdomain": "demo"
+    }
+  },
+  "dockerSetup": {
+    "startCommand": "docker-compose up -d",
+    "stopCommand": "docker-compose down",
+    "cleanRestart": "docker-compose down -v && docker-compose up -d",
+    "ports": {
+      "frontend": 3000,
+      "backend": 5000,
+      "database": 5432
+    }
+  },
+  "healthCheck": {
+    "endpoint": "http://localhost:5000/api/health",
+    "expectedResponse": {
+      "success": true,
+      "message": "System healthy",
+      "database": "connected"
+    }
+  },
+  "seedData": {
+    "tenants": [
+      {
+        "name": "Demo Company",
+        "subdomain": "demo",
+        "status": "active"
+      }
+    ],
+    "projects": 2,
+    "tasks": 5
+  }
+}
