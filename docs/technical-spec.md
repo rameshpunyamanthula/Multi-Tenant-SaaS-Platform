@@ -3,12 +3,11 @@
 ## 1. Overview
 
 This document describes the technical structure and organization of the Multi-Tenant SaaS Platform – Project & Task Management System. It outlines the folder structure for both backend and frontend applications and explains the purpose of each major component. This structure is designed to support scalability, maintainability, and clear separation of concerns.
-
 ---
-
 ## 2. Backend Project Structure
 
 The backend is implemented as a RESTful API using Node.js and Express. The folder structure follows a modular approach to keep the codebase clean and maintainable.
+
 
 backend/
 ├── src/
@@ -27,7 +26,6 @@ backend/
 ├── Dockerfile
 ├── package.json
 └── .env
-
 
 ### Folder Descriptions
 
